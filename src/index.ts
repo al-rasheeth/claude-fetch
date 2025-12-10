@@ -27,7 +27,7 @@ registerWebSearchTool(server, searchService);
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    // console.error("Claude Fetch Local MCP Server running on stdio");
+    console.error("Claude Fetch Local MCP Server running on stdio");
 }
 
 main().catch((error) => {
