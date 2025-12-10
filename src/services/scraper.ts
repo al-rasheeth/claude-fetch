@@ -24,7 +24,7 @@ export class SmartScraper {
         return this.browser;
     }
 
-    async scrape(url: string, options?: { mobile?: boolean; screenshot?: boolean }): Promise<ScrapeResult> {
+    async scrape(url: string, options?: { mobile?: boolean; screenshot?: boolean; includeLinks?: boolean; includeMetadata?: boolean }): Promise<ScrapeResult> {
         const browser = await this.getBrowser();
         const page = await browser.newPage();
 
@@ -93,6 +93,34 @@ export class SmartScraper {
                 screenshot = buffer;
             }
 
+            // Extract Links
+            let links: string[] | undefined;
+            if (options?.includeLinks) {
+                links = await page.$$eval("a", (anchors) =>
+                    anchors
+                        .map((a) => a.href)
+                        .filter((href) => href.startsWith("http")) // Only keep valid http/https links
+                        .filter((value, index, self) => self.indexOf(value) === index) // Deduplicate
+                );
+            }
+
+            // Extract Metadata (OpenGraph + standard)
+            let metadata: Record<string, string> | undefined;
+            if (options?.includeMetadata) {
+                metadata = await page.evaluate(() => {
+                    const meta: Record<string, string> = {};
+                    const metaTags = document.querySelectorAll("meta");
+                    metaTags.forEach((tag) => {
+                        const name = tag.getAttribute("name") || tag.getAttribute("property");
+                        const content = tag.getAttribute("content");
+                        if (name && content) {
+                            meta[name] = content;
+                        }
+                    });
+                    return meta;
+                });
+            }
+
             return {
                 title: article.title || "",
                 content: markdown,
@@ -100,6 +128,8 @@ export class SmartScraper {
                 excerpt: article.excerpt || "",
                 url: url,
                 screenshot,
+                links,
+                metadata,
             };
         } finally {
             await page.close();

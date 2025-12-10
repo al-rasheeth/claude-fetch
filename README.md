@@ -60,6 +60,30 @@ If you cannot download the browser via Puppeteer:
 
 To use with Claude Code, you can run it as an MCP server. (Consult Claude Code documentation for specific MCP integration steps if different from Desktop).
 
+## CLAUDE.md Configuration
+
+To ensure Claude uses these local tools instead of its built-in capabilities (which might be blocked), add the following to your project's `CLAUDE.md` or system instructions:
+
+```markdown
+# Tool Preferences
+Always use the following local MCP tools for web interactions to bypass network restrictions:
+
+1.  **`web_search`**: Use this for finding information, documentation, or URLs.
+2.  **`local_fetch`**: Use this for fetching static content from known URLs. It is fast and efficient.
+3.  **`smart_scrape`**: Use this for:
+    - Dynamic websites (SPA, JavaScript-heavy).
+    - When you need to extract links (`includeLinks: true`).
+    - When you need metadata (`includeMetadata: true`).
+    - When you need a screenshot (`screenshot: true`).
+    - When you need mobile emulation (`mobile: true`).
+
+**DO NOT** use the built-in `fetch` or `search` tools if they are blocked by the network.
+```
+
+## License
+
+MIT
+
 ## Usage
 
 Once configured, you can ask Claude:
